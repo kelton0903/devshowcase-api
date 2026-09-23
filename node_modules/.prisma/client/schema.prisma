@@ -1,0 +1,65 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Profile {
+  id        String    @id @default(uuid())
+  name      String
+  email     String    @unique
+  bio       String?
+  githubUrl String?
+  avatarUrl String?
+  projects  Project[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Project {
+  id            String              @id @default(uuid())
+  title         String
+  description   String
+  repositoryUrl String
+  liveUrl       String?
+  profileId     String
+  profile       Profile             @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  feedbacks     Feedback[]
+  technologies  ProjectTechnology[]
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+}
+
+model Technology {
+  id        String              @id @default(uuid())
+  name      String              @unique
+  category  String?
+  projects  ProjectTechnology[]
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+}
+
+model ProjectTechnology {
+  projectId    String
+  technologyId String
+  project      Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  technology   Technology @relation(fields: [technologyId], references: [id], onDelete: Cascade)
+  assignedAt   DateTime   @default(now())
+
+  @@id([projectId, technologyId])
+}
+
+model Feedback {
+  id          String   @id @default(uuid())
+  authorName  String
+  authorEmail String?
+  comment     String
+  rating      Int
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
